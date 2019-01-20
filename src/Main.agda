@@ -213,6 +213,7 @@ open ∞Graph public
   using (⇑_)
 
 module _ (Θ : ∞Graph) where
+  infix 0 _∈_
   infixl 6 _▸_⇒_
 
   mutual
@@ -233,14 +234,14 @@ module _ (Θ : ∞Graph) where
     ⟦Diagram⟧ · = * Θ
     ⟦Diagram⟧ (Ψ ▸ x ⇒ y) = Cell (Ψ ▸ x ⇒ y)
 
-    data _∈_ : ∀ {r} → Diagram {r} → Disc → Set where
-
     record Atom {r} (Ψ : Diagram {r}) : Set where
       inductive
+      constructor [_⊢_]
       field
         {Γ} : Disc
         coe : Ψ ∈ Γ
         elm : ⟦Disc⟧ Γ .*
+    pattern [_] {Γ}{coe} elm = [_⊢_] {Γ} coe elm
 
     data Cell {r : ∞ℕ} : Diagram {r} → Set where
       atom : ∀ {Ψ} → Atom Ψ → Cell Ψ
@@ -255,6 +256,13 @@ module _ (Θ : ∞Graph) where
       uni-gpd-κ : ∀ {Ψ x y f} ⦃ ϕ : r ⊏ Ψ ⦄ → Cell (Ψ ▸ y ⇒ y ▸ seq {y = x} (inv f ⦃ ϕ ⦄) f ⇒ idn)
       uni-gpd-ι : ∀ {Ψ x y f} ⦃ ϕ : r ⊏ Ψ ⦄ → Cell (Ψ ▸ x ⇒ x ▸ seq {y = y} f (inv f ⦃ ϕ ⦄) ⇒ idn)
       coh : ∀ {Ψ} {f g : ⟦Diagram⟧ {r} Ψ} (ϕ : Coh Ψ f) (ψ : Coh Ψ g) → Cell (Ψ ▸ f ⇒ g)
+
+    data _∈_ {r} : Diagram {r} → Disc → Set where
+      z : ∀ {a b}
+        → · ▸ a ⇒ b ∈ · ▸ a ⇒ b
+      s_ : ∀ {Ψ a b Γ x y f g}
+        → (ϕ : Ψ ▸ a ⇒ b ∈ Γ ▸ x ⇒ y)
+        → Ψ ▸ a ⇒ b ▸ atom [ ϕ ⊢ f ] ⇒ atom [ ϕ ⊢ g ] ∈ Γ ▸ x ⇒ y ▸ f ⇒ g
 
     data Coh {r} : ∀ Ψ → ⟦Diagram⟧ {r} Ψ → Set where
       idn : ∀ {Ψ x} → Coh (Ψ ▸ x ⇒ x) idn
